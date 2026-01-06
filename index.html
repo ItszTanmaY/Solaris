@@ -1,0 +1,926 @@
+<!DOCTYPE html>
+<html lang="en" class="antialiased">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- SEO & SOCIAL -->
+    <meta name="description" content="SOLARIS | Sustainable Brutalist Architecture Firm based in Kyoto & Berlin. We design spaces that breathe, merging structural integrity with organic ecosystems.">
+    <meta property="og:title" content="SOLARIS | Sustainable Brutalism">
+    <meta property="og:description" content="Award-winning architectural studio merging concrete and nature.">
+    <meta property="og:image" content="https://images.unsplash.com/photo-1486718448742-163732cd1544?q=80&w=1200&auto=format&fit=crop">
+    <meta property="og:type" content="website">
+    <meta name="theme-color" content="#EAE8E4">
+    
+    <title>SOLARIS | Sustainable Brutalism</title>
+    <link rel="icon" type="image/png" href="">
+    
+    <!-- 1. FONTS -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@200;300;400;500;600&family=Manrope:wght@200;300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+
+    <!-- 2. STYLES -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'display': ['Oswald', 'sans-serif'],
+                        'body': ['Manrope', 'sans-serif'],
+                    },
+                    colors: {
+                        'bone': '#EAE8E4',
+                        'forest': '#182416',
+                        'clay': '#9C4328',
+                        'stone': '#2B2B2B',
+                        'sand': '#D6D3CD',
+                        'concrete': '#B0B0B0'
+                    },
+                    spacing: {
+                        '128': '32rem',
+                    },
+                    cursor: {
+                        'none': 'none',
+                    },
+                    animation: {
+                        'spin-slow': 'spin 12s linear infinite',
+                        'marquee': 'marquee 40s linear infinite',
+                    },
+                    keyframes: {
+                        marquee: {
+                            '0%': { transform: 'translateX(0%)' },
+                            '100%': { transform: 'translateX(-100%)' },
+                        },
+                        spin: {
+                            'from': { transform: 'rotate(0deg)' },
+                            'to': { transform: 'rotate(360deg)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        /* BASE SETTINGS */
+        :root { --cursor-size: 15px; --cursor-hover: 80px; }
+        body { 
+            background-color: #EAE8E4; 
+            color: #182416; 
+            overflow-x: hidden;
+            cursor: none;
+        }
+        
+        ::-webkit-scrollbar { width: 0px; background: transparent; }
+        * { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        /* GRAIN TEXTURE */
+        .grain {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; z-index: 9000;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.05'/%3E%3C/svg%3E");
+            opacity: 0.3; mix-blend-mode: overlay;
+        }
+
+        /* CUSTOM CURSOR */
+        #cursor {
+            position: fixed; top: 0; left: 0;
+            width: var(--cursor-size); height: var(--cursor-size);
+            background-color: #9C4328;
+            border-radius: 50%;
+            pointer-events: none; z-index: 9999;
+            transform: translate(-50%, -50%);
+            transition: width 0.3s cubic-bezier(0.19, 1, 0.22, 1), 
+                        height 0.3s cubic-bezier(0.19, 1, 0.22, 1), 
+                        background-color 0.3s;
+            mix-blend-mode: multiply;
+        }
+        #cursor.hovered {
+            width: var(--cursor-hover); height: var(--cursor-hover);
+            background-color: transparent;
+            border: 1px solid #9C4328;
+            backdrop-filter: blur(2px);
+        }
+        #cursor-text {
+            position: fixed; top: 0; left: 0;
+            pointer-events: none; z-index: 10000;
+            transform: translate(-50%, -50%);
+            font-family: 'Manrope', sans-serif;
+            font-weight: 600; font-size: 10px;
+            color: #9C4328; text-transform: uppercase;
+            opacity: 0; transition: opacity 0.3s;
+        }
+        #cursor.hovered + #cursor-text { opacity: 1; }
+
+        /* TYPOGRAPHY UTILS */
+        .char { transform: translateY(0); transition: transform 0.5s ease; }
+        .line { overflow: hidden; }
+        .font-outline { -webkit-text-stroke: 1px #182416; color: transparent; }
+        
+        /* IMAGE REVEAL MASKS */
+        .reveal-img-container { overflow: hidden; position: relative; }
+        .reveal-img { transform: scale(1.3); transition: transform 1.5s cubic-bezier(0.19, 1, 0.22, 1); }
+        .reveal-img-container.active .reveal-img { transform: scale(1); }
+        
+        /* SPLIT CURTAIN LOADER */
+        #loader {
+            position: fixed; inset: 0; z-index: 10000; pointer-events: auto;
+            display: flex; flex-direction: row;
+        }
+        .loader-panel {
+            background: #182416;
+            width: 50%;
+            height: 100%;
+            position: relative;
+            z-index: 2;
+        }
+        #loader-content {
+            position: fixed; inset: 0; z-index: 10001;
+            display: flex; justify-content: center; align-items: center;
+            color: #EAE8E4; pointer-events: none;
+        }
+        
+        /* MOBILE MENU */
+        #mobile-menu {
+            position: fixed; inset: 0; background: #182416; z-index: 9950;
+            transform: translateY(-100%); transition: transform 0.6s cubic-bezier(0.87, 0, 0.13, 1);
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+        }
+        #mobile-menu.open { transform: translateY(0); }
+
+        /* MARQUEE */
+        .marquee-container { overflow: hidden; white-space: nowrap; display: flex; }
+        .marquee-content { display: flex; animation: marquee 40s linear infinite; }
+
+        /* FAQ ACCORDION */
+        .faq-answer { max-height: 0; overflow: hidden; transition: max-height 0.5s cubic-bezier(0.16, 1, 0.3, 1); }
+        .faq-item.active .faq-answer { max-height: 200px; }
+        .faq-icon { transition: transform 0.3s ease; }
+        .faq-item.active .faq-icon { transform: rotate(45deg); }
+
+        /* MESSY LINES SVG */
+        #materiality-lines {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; z-index: 0; opacity: 0.3;
+        }
+        .messy-path {
+            fill: none; stroke: #9C4328; stroke-width: 1.5;
+            vector-effect: non-scaling-stroke;
+        }
+
+        /* HERO PARALLAX IMG */
+        .hero-bg-wrapper {
+            position: absolute; inset: 0; z-index: 0; overflow: hidden;
+        }
+        .hero-bg-img {
+            width: 100%; height: 100%; object-fit: cover; opacity: 0.15;
+            transform: scale(1.2); 
+            filter: grayscale(100%);
+        }
+
+        /* FORM */
+        input:focus, textarea:focus { outline: none; border-color: #9C4328; }
+    </style>
+</head>
+<body class="font-body selection:bg-clay selection:text-white">
+
+    <!-- SCROLL PROGRESS -->
+    <div class="fixed top-0 left-0 h-1 bg-clay z-[10000] transition-all duration-100 ease-out" id="scroll-progress" style="width: 0%"></div>
+
+    <!-- OVERLAYS -->
+    <div class="grain"></div>
+    <div id="cursor"></div>
+    <div id="cursor-text">OPEN</div>
+
+    <!-- MOBILE MENU OVERLAY -->
+    <div id="mobile-menu">
+        <div class="flex flex-col gap-8 text-center">
+            <a href="#about" class="mobile-link font-display text-5xl text-bone hover:text-clay transition-colors" onclick="toggleMenu()">Studio</a>
+            <a href="#works" class="mobile-link font-display text-5xl text-bone hover:text-clay transition-colors" onclick="toggleMenu()">Works</a>
+            <a href="#services" class="mobile-link font-display text-5xl text-bone hover:text-clay transition-colors" onclick="toggleMenu()">Expertise</a>
+            <a href="#contact" class="mobile-link font-display text-5xl text-bone hover:text-clay transition-colors" onclick="toggleMenu()">Contact</a>
+        </div>
+        <button onclick="toggleMenu()" class="absolute top-8 right-8 text-bone font-mono uppercase tracking-widest text-xs">Close</button>
+    </div>
+
+    <!-- SPLIT CURTAIN LOADER -->
+    <div id="loader">
+        <div class="loader-panel left-panel"></div>
+        <div class="loader-panel right-panel"></div>
+    </div>
+    <div id="loader-content">
+        <div class="overflow-hidden h-32 md:h-64 relative">
+            <span id="counter" class="font-display text-9xl md:text-[15rem] leading-none text-bone block transform translate-y-full">0</span>
+        </div>
+    </div>
+
+    <!-- BACKGROUND CANVAS (WIND SIMULATION) -->
+    <canvas id="wind-canvas" class="fixed inset-0 z-0 pointer-events-none opacity-10"></canvas>
+
+    <!-- NAVIGATION (Fixed Visibility) -->
+    <nav class="fixed top-0 left-0 w-full p-6 md:p-8 z-50 flex justify-between items-center text-forest transition-transform duration-300" id="navbar">
+        <div class="flex flex-col gap-0 cursor-hover" data-text="HOME">
+            <span class="font-display text-2xl font-bold tracking-tighter uppercase leading-none">Solaris</span>
+        </div>
+        
+        <div class="hidden md:flex gap-8 font-mono text-xs uppercase tracking-widest font-semibold">
+            <a href="#about" class="hover:text-clay transition-colors cursor-hover">Studio</a>
+            <a href="#works" class="hover:text-clay transition-colors cursor-hover">Works</a>
+            <a href="#services" class="hover:text-clay transition-colors cursor-hover">Expertise</a>
+            <a href="#contact" class="hover:text-clay transition-colors cursor-hover">Contact</a>
+        </div>
+
+        <button onclick="toggleMenu()" class="md:hidden font-display uppercase tracking-widest text-sm cursor-hover z-50 relative">Menu</button>
+    </nav>
+
+    <!-- SCROLL WRAPPER -->
+    <main id="main">
+
+        <!-- 1. HERO SECTION (CENTERED & ENHANCED) -->
+        <section class="min-h-screen w-full flex flex-col justify-center items-center px-6 md:px-20 relative pt-20 pb-20 overflow-hidden">
+            
+            <!-- Hero Background Image -->
+            <div class="hero-bg-wrapper">
+                <img src="https://images.unsplash.com/photo-1486718448742-163732cd1544?q=80&w=2600&auto=format&fit=crop" class="hero-bg-img" id="hero-img">
+            </div>
+
+            <!-- Decorative Tech Details (Hidden on Mobile) -->
+            <div class="absolute top-1/2 left-6 md:left-10 -translate-y-1/2 hidden lg:flex flex-col gap-8 font-mono text-[10px] text-forest uppercase tracking-widest z-10 mix-blend-multiply">
+                <div class="w-[1px] h-32 bg-forest"></div>
+                <span class="rotate-180" style="writing-mode: vertical-rl;">EST. 2026</span>
+                <span>Lat: 35.0116° N</span>
+            </div>
+            
+            <div class="absolute top-1/2 right-6 md:right-10 -translate-y-1/2 hidden lg:flex flex-col gap-8 font-mono text-[10px] text-forest uppercase tracking-widest items-end z-10 mix-blend-multiply">
+                <span>Long: 135.7681° E</span>
+                <span class="rotate-180" style="writing-mode: vertical-rl;">System: Bio-Grid</span>
+                <div class="w-[1px] h-32 bg-forest"></div>
+            </div>
+
+            <!-- Main Title (Responsive Text Sizes) -->
+            <div class="relative z-20 flex flex-col items-center text-center w-full">
+                <div class="overflow-visible">
+                    <h1 class="font-display text-[18vw] md:text-[15vw] leading-[0.9] uppercase text-forest tracking-tighter split-type-left">
+                        Concrete
+                    </h1>
+                </div>
+                <div class="relative flex items-center gap-2 md:gap-8 flex-wrap justify-center -mt-2 md:-mt-6">
+                    <div class="w-8 h-8 md:w-24 md:h-24 rounded-full border border-forest/20 flex items-center justify-center animate-spin-slow flex-shrink-0 scale-0 origin-center" id="hero-icon">
+                        <i class="ri-leaf-line text-xs md:text-3xl text-clay"></i>
+                    </div>
+                    <h1 class="font-display text-[18vw] md:text-[15vw] leading-[0.9] uppercase text-forest tracking-tighter split-type-right">
+                        <span class="font-outline italic hover:text-clay transition-colors duration-500 cursor-hover">&</span> Nature
+                    </h1>
+                </div>
+            </div>
+            
+            <div class="mt-12 md:mt-32 w-full max-w-7xl grid grid-cols-1 md:grid-cols-12 gap-8 border-t border-forest/10 pt-8 relative z-20">
+                <div class="md:col-span-6 md:col-start-1">
+                    <div class="font-mono text-xs text-clay mb-4 tracking-widest uppercase">[ Manifesto 01 ]</div>
+                    <p class="text-lg md:text-xl font-body text-forest leading-relaxed reveal-fade font-medium">
+                        We design spaces that breathe. Merging brutalist structural integrity with organic, living ecosystems to create the monuments of tomorrow.
+                    </p>
+                </div>
+                <div class="md:col-span-2 md:col-start-12 flex flex-row md:flex-col justify-between md:items-end items-center reveal-fade w-full">
+                    <div class="font-mono text-xs opacity-50 mb-0 md:mb-4 uppercase tracking-widest">Scroll Down</div>
+                    <div class="animate-bounce text-forest"><i class="ri-arrow-down-line text-2xl"></i></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 2. ABOUT / INTRO -->
+        <section id="about" class="py-20 md:py-32 px-6 md:px-20 bg-bone relative z-10 border-t border-forest/5">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-16 md:gap-32">
+                <div>
+                    <span class="font-mono text-clay text-xs tracking-widest uppercase mb-6 block">/// The Philosophy</span>
+                    <h2 class="font-display text-4xl md:text-6xl text-forest uppercase leading-tight split-type">
+                        Architecture is not<br>just shelter. It is<br>connection.
+                    </h2>
+                </div>
+                <div class="flex flex-col justify-end">
+                    <p class="font-body text-lg text-forest/70 leading-relaxed mb-8 reveal-fade">
+                        Our work explores the relationship between the built environment and the natural world. We believe that true luxury lies in the quality of light, the honesty of materials, and the seamless integration of landscape.
+                    </p>
+                    
+                    <!-- NEW THICKER LINE FOR BRUTALIST IMPACT -->
+                    <div class="h-2 w-full bg-forest mb-8"></div>
+                    
+                    <ul class="font-mono text-xs uppercase tracking-widest text-forest/60 space-y-2 reveal-fade">
+                        <li>— Passive Design</li>
+                        <li>— Sustainable Materials</li>
+                        <li>— Biophilic Integration</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- 3. SELECTED WORKS -->
+        <section id="works" class="py-20 px-6 md:px-20 bg-bone relative z-10">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-end mb-20 relative">
+                <h2 class="font-display text-6xl md:text-9xl uppercase text-forest opacity-10 absolute left-0 -top-10 md:-top-20 pointer-events-none select-none">Projects</h2>
+                <span class="font-mono text-xs uppercase tracking-widest text-clay relative z-10 mb-4 md:mb-0">(Selected Works 24-25)</span>
+            </div>
+
+            <!-- Project 1 -->
+            <div class="project-card sticky top-24 min-h-[80vh] w-full bg-forest text-bone p-6 md:p-12 mb-20 rounded-sm overflow-hidden group shadow-2xl transform-gpu border border-white/5 flex flex-col justify-between">
+                <div class="flex flex-col md:flex-row justify-between items-start z-20 relative mb-8 md:mb-0">
+                    <h3 class="font-display text-5xl md:text-8xl uppercase mix-blend-difference">House of Stone</h3>
+                    <span class="font-mono text-xs border border-white/20 px-4 py-2 rounded-full mt-4 md:mt-0 backdrop-blur-md">RESIDENTIAL</span>
+                </div>
+                <div class="absolute inset-0 z-0">
+                    <img src="https://images.unsplash.com/photo-1600607686527-6fb886090705?q=80&w=2600&auto=format&fit=crop" 
+                         class="w-full h-full object-cover opacity-60 group-hover:opacity-40 group-hover:scale-105 transition-all duration-1000 ease-out grayscale group-hover:grayscale-0" alt="House 1">
+                </div>
+                <div class="z-20 max-w-md relative">
+                    <p class="font-body text-sm md:text-base opacity-90 leading-relaxed mb-6">
+                        A monolithic structure carved into the limestone cliffs of Portugal. Utilizing raw materials to blend seamlessly with the topography.
+                    </p>
+                    <button class="font-display uppercase tracking-widest text-sm border-b border-white pb-1 hover:text-clay hover:border-clay transition-colors cursor-hover" data-text="VIEW">View Case Study</button>
+                </div>
+            </div>
+
+            <!-- Project 2 -->
+            <div class="project-card sticky top-28 min-h-[80vh] w-full bg-stone text-bone p-6 md:p-12 mb-20 rounded-sm overflow-hidden group shadow-2xl transform-gpu border border-white/5 flex flex-col justify-between">
+                <div class="flex flex-col md:flex-row justify-between items-start z-20 relative mb-8 md:mb-0">
+                    <h3 class="font-display text-5xl md:text-8xl uppercase mix-blend-difference">Glass Pavilion</h3>
+                    <span class="font-mono text-xs border border-white/20 px-4 py-2 rounded-full mt-4 md:mt-0 backdrop-blur-md">COMMERCIAL</span>
+                </div>
+                <div class="absolute inset-0 z-0">
+                    <img src="glass.jpg" 
+                         class="w-full h-full object-cover opacity-60 group-hover:opacity-40 group-hover:scale-105 transition-all duration-1000 ease-out grayscale group-hover:grayscale-0" alt="House 2">
+                </div>
+                <div class="z-20 max-w-md relative">
+                    <p class="font-body text-sm md:text-base opacity-90 leading-relaxed mb-6">
+                        An office space designed to maximize natural light while minimizing thermal gain through passive cooling systems and overhangs.
+                    </p>
+                    <button class="font-display uppercase tracking-widest text-sm border-b border-white pb-1 hover:text-clay hover:border-clay transition-colors cursor-hover" data-text="VIEW">View Case Study</button>
+                </div>
+            </div>
+
+            <!-- Project 3 -->
+            <div class="project-card sticky top-32 min-h-[80vh] w-full bg-[#3D3A36] text-bone p-6 md:p-12 mb-20 rounded-sm overflow-hidden group shadow-2xl transform-gpu border border-white/5 flex flex-col justify-between">
+                <div class="flex flex-col md:flex-row justify-between items-start z-20 relative mb-8 md:mb-0">
+                    <h3 class="font-display text-5xl md:text-8xl uppercase mix-blend-difference">Moss Retreat</h3>
+                    <span class="font-mono text-xs border border-white/20 px-4 py-2 rounded-full mt-4 md:mt-0 backdrop-blur-md">HOSPITALITY</span>
+                </div>
+                <div class="absolute inset-0 z-0">
+                    <img src="moss.jpg" 
+                         class="w-full h-full object-cover opacity-60 group-hover:opacity-40 group-hover:scale-105 transition-all duration-1000 ease-out grayscale group-hover:grayscale-0" alt="House 3">
+                </div>
+                <div class="z-20 max-w-md relative">
+                    <p class="font-body text-sm md:text-base opacity-90 leading-relaxed mb-6">
+                        A sanctuary in the Kyoto mountains. Wood, moss, and rain chains create a sensory experience for guests seeking solitude.
+                    </p>
+                    <button class="font-display uppercase tracking-widest text-sm border-b border-white pb-1 hover:text-clay hover:border-clay transition-colors cursor-hover" data-text="VIEW">View Case Study</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- 4. SERVICES -->
+        <section id="services" class="py-32 px-6 md:px-20 bg-forest text-bone relative">
+            <!-- ... existing services code ... -->
+             <div class="flex flex-col md:flex-row justify-between items-start mb-20">
+                <h2 class="font-display text-6xl md:text-8xl uppercase">Expertise</h2>
+                <p class="max-w-xs text-sm font-mono opacity-60 mt-4 md:mt-0">
+                    Full-service architectural design from concept to completion.
+                </p>
+            </div>
+
+            <div class="flex flex-col border-t border-white/10">
+                <!-- Service 1 -->
+                <div class="group border-b border-white/10 py-12 cursor-hover transition-colors hover:bg-white/5 relative overflow-hidden">
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center relative z-10 px-4">
+                        <div class="flex items-baseline gap-8">
+                            <span class="font-mono text-xs text-clay">01</span>
+                            <h3 class="font-display text-4xl md:text-5xl uppercase group-hover:translate-x-4 transition-transform duration-300">Architecture</h3>
+                        </div>
+                        <i class="ri-add-line text-2xl opacity-50 group-hover:rotate-45 transition-transform duration-300"></i>
+                    </div>
+                    <div class="max-h-0 overflow-hidden group-hover:max-h-40 transition-all duration-500 ease-in-out px-4 md:pl-16">
+                        <p class="pt-6 text-sm opacity-60 max-w-lg font-body">
+                            Residential, commercial, and public sector design focused on sustainability and structural innovation.
+                        </p>
+                    </div>
+                </div>
+                <!-- Service 2 -->
+                <div class="group border-b border-white/10 py-12 cursor-hover transition-colors hover:bg-white/5 relative overflow-hidden">
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center relative z-10 px-4">
+                        <div class="flex items-baseline gap-8">
+                            <span class="font-mono text-xs text-clay">02</span>
+                            <h3 class="font-display text-4xl md:text-5xl uppercase group-hover:translate-x-4 transition-transform duration-300">Interiors</h3>
+                        </div>
+                        <i class="ri-add-line text-2xl opacity-50 group-hover:rotate-45 transition-transform duration-300"></i>
+                    </div>
+                    <div class="max-h-0 overflow-hidden group-hover:max-h-40 transition-all duration-500 ease-in-out px-4 md:pl-16">
+                        <p class="pt-6 text-sm opacity-60 max-w-lg font-body">
+                            Curated material palettes, custom furniture design, and lighting strategy to complement architectural form.
+                        </p>
+                    </div>
+                </div>
+                <!-- Service 3 -->
+                <div class="group border-b border-white/10 py-12 cursor-hover transition-colors hover:bg-white/5 relative overflow-hidden">
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center relative z-10 px-4">
+                        <div class="flex items-baseline gap-8">
+                            <span class="font-mono text-xs text-clay">03</span>
+                            <h3 class="font-display text-4xl md:text-5xl uppercase group-hover:translate-x-4 transition-transform duration-300">Landscape</h3>
+                        </div>
+                        <i class="ri-add-line text-2xl opacity-50 group-hover:rotate-45 transition-transform duration-300"></i>
+                    </div>
+                    <div class="max-h-0 overflow-hidden group-hover:max-h-40 transition-all duration-500 ease-in-out px-4 md:pl-16">
+                        <p class="pt-6 text-sm opacity-60 max-w-lg font-body">
+                            Native planting schemes, topography manipulation, and water systems integration.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 5. MATERIALS & SKETCH (ASYMMETRIC GRID) -->
+        <section id="materiality" class="py-32 px-6 md:px-20 bg-bone text-forest relative overflow-hidden">
+            <!-- Animated Messy Line Background -->
+            <svg id="materiality-lines" viewBox="0 0 1440 900" preserveAspectRatio="none" class="absolute inset-0 w-full h-full pointer-events-none z-0 opacity-40">
+                <path class="messy-path" d="M -100 400 C 200 450, 300 100, 500 300 S 800 600, 1000 400 S 1300 100, 1600 300" style="fill:none; stroke:#9C4328; stroke-width:2; vector-effect:non-scaling-stroke;" />
+                <path class="messy-path" d="M -100 600 C 150 700, 400 500, 600 700 S 900 300, 1200 500 S 1500 800, 1700 600" style="fill:none; stroke:#9C4328; stroke-width:1; opacity:0.5; vector-effect:non-scaling-stroke;" />
+            </svg>
+
+            <div class="relative z-10">
+                <div class="flex flex-col md:flex-row gap-12 mb-24">
+                    <div class="md:w-1/3">
+                        <span class="font-mono text-clay text-xs tracking-widest uppercase mb-4 block">/// Materiality</span>
+                        <h2 class="font-display text-5xl md:text-7xl uppercase leading-none">Raw<br>Honesty</h2>
+                    </div>
+                    <div class="md:w-1/2 md:ml-auto pt-8">
+                        <p class="text-lg font-body opacity-80 max-w-xl bg-bone/80 backdrop-blur-sm p-4 rounded-lg">
+                            We eschew ornamentation. Our palette is derived from the earth itself—unrefined concrete, charred timber, and aged copper. Imperfection is not a flaw; it is a record of time.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Asymmetric Broken Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-y-24">
+                    <!-- Item 1 (Tall Vertical) -->
+                    <div class="md:col-span-5 md:col-start-1 group cursor-hover">
+                        <div class="relative overflow-hidden mb-4 shadow-xl rounded-sm">
+                            <img src="concret.jpg" class="w-full aspect-[4/5] object-cover grayscale group-hover:grayscale-0 transition-all duration-700 transform group-hover:scale-105">
+                            <div class="absolute -bottom-6 -right-6 font-display text-9xl text-white mix-blend-overlay opacity-50 group-hover:opacity-80 transition-opacity select-none">01</div>
+                        </div>
+                        <h3 class="font-display text-3xl uppercase relative z-10">Concrete</h3>
+                        <p class="font-mono text-xs opacity-60 mt-1">Foundations / Structure</p>
+                    </div>
+
+                    <!-- Item 2 (Square, Offset Right) -->
+                    <div class="md:col-span-4 md:col-start-8 md:mt-32 group cursor-hover">
+                        <div class="relative overflow-hidden mb-4 shadow-xl rounded-sm">
+                            <img src="wood.jpg" class="w-full aspect-square object-cover grayscale group-hover:grayscale-0 transition-all duration-700 transform group-hover:scale-105">
+                            <div class="absolute -top-6 -left-6 font-display text-9xl text-white mix-blend-overlay opacity-50 group-hover:opacity-80 transition-opacity select-none">02</div>
+                        </div>
+                        <h3 class="font-display text-3xl uppercase relative z-10">Timber</h3>
+                        <p class="font-mono text-xs opacity-60 mt-1">Warmth / Texture</p>
+                    </div>
+
+                    <!-- Item 3 (Wide Landscape, Offset Center) -->
+                    <div class="md:col-span-6 md:col-start-4 md:-mt-20 group cursor-hover">
+                        <div class="relative overflow-hidden mb-4 shadow-xl rounded-sm">
+                            <img src="stone.jpg" class="w-full aspect-[16/9] object-cover grayscale group-hover:grayscale-0 transition-all duration-700 transform group-hover:scale-105">
+                            <div class="absolute bottom-4 right-4 text-white font-mono text-xs bg-black/20 backdrop-blur-sm px-2 py-1 uppercase tracking-widest">Sourced Locally</div>
+                        </div>
+                        <div class="flex items-center gap-4">
+                            <h3 class="font-display text-3xl uppercase">Stone</h3>
+                            <div class="h-[1px] w-20 bg-forest/20"></div>
+                            <p class="font-mono text-xs opacity-60">Permanence</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 6. THE COLLECTIVE (ZOOM ANIMATION - ROUNDED 16px) -->
+        <section id="collective-zoom" class="h-[300vh] relative z-20 bg-bone">
+            <div class="sticky top-0 h-screen w-full flex items-center justify-center overflow-hidden">
+                <!-- Mobile: wider initially. Desktop: smaller initially -->
+                <div id="collective-container" class="relative z-10 w-[80vw] md:w-[30vw] h-[40vh] rounded-2xl overflow-hidden bg-forest text-bone flex flex-col justify-center items-center shadow-2xl transform-gpu">
+                    
+                    <!-- Title -->
+                    <div id="collective-title" class="text-center z-20">
+                        <span class="font-mono text-clay text-xs tracking-[0.3em] uppercase mb-4 block">/// The Architects</span>
+                        <h2 class="font-display text-6xl md:text-8xl uppercase leading-none">The<br>Collective</h2>
+                    </div>
+
+                    <!-- Content -->
+                    <div id="collective-grid" class="absolute inset-0 w-full h-full opacity-0 flex flex-col justify-center px-6 md:px-20 pt-10 overflow-y-auto md:overflow-visible">
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-8 w-full max-w-[90vw] mx-auto py-8 md:py-0">
+                            <!-- Member 1 -->
+                            <div class="group cursor-hover">
+                                <div class="aspect-[3/4] overflow-hidden mb-4 relative bg-stone">
+                                    <img src="team1.png" class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500">
+                                </div>
+                                <h4 class="font-display text-xl uppercase">Elias Thorne</h4>
+                                <p class="font-mono text-xs opacity-60 mt-1">Principal</p>
+                            </div>
+                            <!-- Member 2 -->
+                            <div class="group cursor-hover md:translate-y-12">
+                                <div class="aspect-[3/4] overflow-hidden mb-4 relative bg-stone">
+                                    <img src="team2.png" class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500">
+                                </div>
+                                <h4 class="font-display text-xl uppercase">Maya Lin</h4>
+                                <p class="font-mono text-xs opacity-60 mt-1">Interior Lead</p>
+                            </div>
+                            <!-- Member 3 -->
+                            <div class="group cursor-hover">
+                                <div class="aspect-[3/4] overflow-hidden mb-4 relative bg-stone">
+                                    <img src="team3.png" class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500">
+                                </div>
+                                <h4 class="font-display text-xl uppercase">Kai Sato</h4>
+                                <p class="font-mono text-xs opacity-60 mt-1">Landscape</p>
+                            </div>
+                            <!-- Join -->
+                            <div class="aspect-[3/4] border border-white/20 flex flex-col justify-center items-center cursor-hover hover:bg-white/10 transition-colors duration-500 md:translate-y-12">
+                                <span class="font-display text-2xl uppercase">Join Us</span>
+                                <i class="ri-arrow-right-line mt-2"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 7. FAQ & FOOTER -->
+        <!-- ... (Rest of code remains similar but with responsive tweaks already applied) ... -->
+        <section id="faq" class="py-32 px-6 md:px-20 bg-bone border-t border-forest/10">
+            <h2 class="font-display text-5xl uppercase text-forest mb-16">Inquiries</h2>
+            <div class="flex flex-col border-t border-forest/10">
+                <div class="faq-item border-b border-forest/10 cursor-hover group">
+                    <div class="py-8 flex justify-between items-center cursor-pointer" onclick="toggleFaq(this)">
+                        <h3 class="font-display text-lg md:text-2xl text-forest uppercase group-hover:text-clay transition-colors pr-8">Do you work internationally?</h3>
+                        <i class="ri-add-line text-2xl text-forest faq-icon flex-shrink-0"></i>
+                    </div>
+                    <div class="faq-answer">
+                        <p class="pb-8 font-body text-forest/70 max-w-2xl">
+                            Yes. While we are based in Kyoto and Berlin, we accept commissions globally. We specialize in adapting our brutalist-organic philosophy to varied climates and topographies.
+                        </p>
+                    </div>
+                </div>
+                <div class="faq-item border-b border-forest/10 cursor-hover group">
+                    <div class="py-8 flex justify-between items-center cursor-pointer" onclick="toggleFaq(this)">
+                        <h3 class="font-display text-lg md:text-2xl text-forest uppercase group-hover:text-clay transition-colors pr-8">What is your sustainability approach?</h3>
+                        <i class="ri-add-line text-2xl text-forest faq-icon flex-shrink-0"></i>
+                    </div>
+                    <div class="faq-answer">
+                        <p class="pb-8 font-body text-forest/70 max-w-2xl">
+                            We prioritize passive design principles, locally sourced materials, and renewable energy integration. Our goal is net-zero carbon impact for every structure we build.
+                        </p>
+                    </div>
+                </div>
+                <div class="faq-item border-b border-forest/10 cursor-hover group">
+                    <div class="py-8 flex justify-between items-center cursor-pointer" onclick="toggleFaq(this)">
+                        <h3 class="font-display text-lg md:text-2xl text-forest uppercase group-hover:text-clay transition-colors pr-8">Do you handle interior design?</h3>
+                        <i class="ri-add-line text-2xl text-forest faq-icon flex-shrink-0"></i>
+                    </div>
+                    <div class="faq-answer">
+                        <p class="pb-8 font-body text-forest/70 max-w-2xl">
+                            Absolutely. We believe the interior experience is inseparable from the architectural form. Our team provides holistic design services including custom furniture and lighting.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 8. MASSIVE FOOTER WITH SLIDE-UP ANIMATION -->
+        <footer id="contact" class="bg-forest text-bone min-h-screen relative overflow-hidden flex flex-col justify-end pb-20">
+            <!-- Parallax Background Text -->
+            <div class="absolute inset-0 flex items-center justify-center pointer-events-none opacity-10">
+                <h1 class="font-display text-[25vw] leading-none select-none" id="footer-bg-text">IMPACT</h1>
+            </div>
+            
+            <div class="container mx-auto px-6 md:px-20 relative z-10 w-full" id="contact-content">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-20 border-b border-white/10 pb-20">
+                    <div>
+                        <span class="font-mono text-clay text-xs tracking-widest uppercase mb-6 block">/// Inquiry</span>
+                        <h2 class="font-display text-6xl md:text-9xl uppercase leading-[0.8] mb-8">Let's<br><span class="text-clay italic">Talk</span></h2>
+                        <p class="max-w-md font-body text-white/60">
+                            We are selective with our projects. If you are ready to build something that outlasts us all, send us a signal.
+                        </p>
+                    </div>
+                    
+                    <!-- Form -->
+                    <form class="w-full flex flex-col gap-8 justify-end" action="https://formspree.io/f/your-form-id" method="POST">
+                        <div class="relative group">
+                            <input type="text" placeholder="NAME" class="w-full bg-transparent border-b border-white/20 py-4 font-display text-xl tracking-widest placeholder:text-white/20 focus:border-clay transition-colors cursor-hover text-bone" required>
+                        </div>
+                        <div class="relative group">
+                            <input type="email" placeholder="EMAIL" class="w-full bg-transparent border-b border-white/20 py-4 font-display text-xl tracking-widest placeholder:text-white/20 focus:border-clay transition-colors cursor-hover text-bone" required>
+                        </div>
+                        <div class="relative group">
+                            <textarea placeholder="PROJECT DETAILS" rows="1" class="w-full bg-transparent border-b border-white/20 py-4 font-display text-xl tracking-widest placeholder:text-white/20 focus:border-clay transition-colors cursor-hover text-bone resize-none"></textarea>
+                        </div>
+                        <button type="submit" class="self-start mt-8 px-12 py-4 border border-white/20 rounded-full font-mono text-xs uppercase tracking-widest hover:bg-clay hover:border-clay hover:text-white transition-all cursor-hover">
+                            Send Request
+                        </button>
+                    </form>
+                </div>
+                
+                <div class="mt-12 flex flex-col md:flex-row justify-between items-center font-mono text-xs uppercase tracking-widest opacity-40 gap-4 md:gap-0">
+                    <span>© 2026 Solaris Arch.</span>
+                    <div class="flex gap-6">
+                        <a href="#" class="hover:text-white cursor-hover">Insta</a>
+                        <a href="#" class="hover:text-white cursor-hover">Behance</a>
+                        <a href="#" class="hover:text-white cursor-hover">LinkedIn</a>
+                    </div>
+                    <span>Kyoto / Berlin / New York</span>
+                </div>
+            </div>
+        </footer>
+
+    </main>
+
+    <!-- SCRIPTS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <script src="https://unpkg.com/split-type"></script>
+    <script src="https://cdn.jsdelivr.net/gh/studio-freight/lenis@1.0.29/bundled/lenis.min.js"></script>
+
+    <script>
+        // --- 1. LOADER LOGIC ---
+        const safeLoaderTimeout = setTimeout(() => {
+            const loader = document.getElementById('loader');
+            if (loader && loader.style.display !== 'none') {
+                revealSite();
+            }
+        }, 5000);
+
+        window.addEventListener('load', () => {
+            clearTimeout(safeLoaderTimeout);
+            const counter = document.getElementById('counter');
+            let count = 0;
+            const countInterval = setInterval(() => {
+                count++;
+                if (counter) {
+                    counter.innerText = count;
+                    counter.style.transform = `translateY(${100 - count}%)`;
+                }
+                if (count === 100) {
+                    clearInterval(countInterval);
+                    revealSite();
+                }
+            }, 20);
+        });
+
+        function revealSite() {
+            const tl = gsap.timeline();
+            
+            // Split Curtain Effect: Move panels apart
+            tl.to(".loader-panel.left-panel", { xPercent: -100, duration: 1.2, ease: "power4.inOut" })
+              .to(".loader-panel.right-panel", { xPercent: 100, duration: 1.2, ease: "power4.inOut" }, "<")
+              
+            // Fade out content
+            .to("#loader-content", { opacity: 0, duration: 0.5 }, "<")
+            
+            // Cleanup
+            .set("#loader", { display: "none" })
+            .set("#loader-content", { display: "none" })
+            
+            // Trigger Animations
+            .add(() => {
+                initAnimations();
+                ScrollTrigger.refresh();
+            }, "-=0.5");
+        }
+
+        // --- 2. MENU & FAQ TOGGLES ---
+        const mobileMenu = document.getElementById('mobile-menu');
+        function toggleMenu() { mobileMenu.classList.toggle('open'); }
+
+        function toggleFaq(element) {
+            const item = element.parentElement;
+            item.classList.toggle('active');
+        }
+
+        // --- 3. SMOOTH SCROLL (LENIS) ---
+        const lenis = new Lenis({
+            duration: 1.2,
+            easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+            direction: 'vertical',
+            smooth: true,
+        });
+        function raf(time) {
+            lenis.raf(time);
+            requestAnimationFrame(raf);
+        }
+        requestAnimationFrame(raf);
+        gsap.registerPlugin(ScrollTrigger);
+
+        // --- 4. CUSTOM CURSOR ---
+        const cursor = document.getElementById('cursor');
+        const cursorText = document.getElementById('cursor-text');
+        document.addEventListener('mousemove', (e) => {
+            cursor.style.left = e.clientX + 'px';
+            cursor.style.top = e.clientY + 'px';
+            cursorText.style.left = e.clientX + 'px';
+            cursorText.style.top = e.clientY + 'px';
+        });
+        document.querySelectorAll('.cursor-hover').forEach(el => {
+            el.addEventListener('mouseenter', () => {
+                cursor.classList.add('hovered');
+                if(el.getAttribute('data-text')) {
+                    cursorText.innerText = el.getAttribute('data-text');
+                    cursorText.style.opacity = 1;
+                }
+            });
+            el.addEventListener('mouseleave', () => {
+                cursor.classList.remove('hovered');
+                cursorText.style.opacity = 0;
+            });
+        });
+
+        // --- 5. ANIMATIONS ---
+        function initAnimations() {
+            document.fonts.ready.then(() => {
+                // SCROLL PROGRESS
+                gsap.to("#scroll-progress", {
+                    width: "100%",
+                    ease: "none",
+                    scrollTrigger: {
+                        trigger: "body",
+                        start: "top top",
+                        end: "bottom bottom",
+                        scrub: 0.1
+                    }
+                });
+
+                // Left split: "Concrete"
+                const splitLeft = new SplitType('.split-type-left', { types: 'chars' });
+                gsap.from(splitLeft.chars, {
+                    xPercent: -150, // Move from far left
+                    opacity: 0,
+                    duration: 1.5, 
+                    stagger: 0.05, 
+                    ease: 'power4.out',
+                    scrollTrigger: { trigger: '.split-type-left', start: "top 80%" }
+                });
+
+                // Right split: "& Nature"
+                const splitRight = new SplitType('.split-type-right', { types: 'chars' });
+                gsap.from(splitRight.chars, {
+                    xPercent: 150, // Move from far right
+                    opacity: 0,
+                    duration: 1.5, 
+                    stagger: -0.05, 
+                    ease: 'power4.out',
+                    scrollTrigger: { trigger: '.split-type-right', start: "top 80%" }
+                });
+                
+                // Icon Reveal
+                gsap.to("#hero-icon", {
+                    scale: 1, duration: 1, ease: "elastic.out(1, 0.5)", delay: 0.5
+                });
+                
+                // Regular splits for other sections
+                const splitTypes = document.querySelectorAll('.split-type');
+                splitTypes.forEach(char => {
+                    const text = new SplitType(char, { types: 'chars' });
+                    gsap.from(text.chars, {
+                        y: 100, opacity: 0, rotationX: 45, stagger: 0.05, duration: 1.2, ease: 'power4.out',
+                        scrollTrigger: { trigger: char, start: "top 80%" }
+                    });
+                });
+            });
+
+            gsap.utils.toArray('.reveal-fade').forEach(el => {
+                gsap.from(el, {
+                    y: 40, opacity: 0, duration: 1.5, ease: 'power3.out',
+                    scrollTrigger: { trigger: el, start: "top 90%" }
+                });
+            });
+
+            // Hero Parallax
+            gsap.to(".hero-bg-img", {
+                y: "20%",
+                ease: "none",
+                scrollTrigger: {
+                    trigger: "body",
+                    start: "top top",
+                    end: "bottom top",
+                    scrub: true
+                }
+            });
+
+            const cards = gsap.utils.toArray('.project-card');
+            cards.forEach((card, i) => {
+                gsap.to(card, {
+                    scale: 0.9, opacity: 1 - (cards.length - i) * 0.1,
+                    scrollTrigger: { trigger: card, start: "top 10%", end: "bottom 10%", scrub: true }
+                });
+            });
+
+            // TEAM SECTION ZOOM ANIMATION
+            const zoomTimeline = gsap.timeline({
+                scrollTrigger: {
+                    trigger: "#collective-zoom",
+                    start: "top top",
+                    end: "bottom bottom",
+                    scrub: 1
+                }
+            });
+
+            zoomTimeline.to("#collective-container", {
+                width: "100vw",
+                height: "100vh",
+                borderRadius: "0px",
+                ease: "power2.inOut",
+                duration: 2
+            })
+            .to("#collective-title", { opacity: 0, y: -50, duration: 1, ease: "power2.out" }, "<")
+            .to("#collective-grid", { opacity: 1, duration: 1.5, ease: "power2.inOut" }, "-=0.5");
+
+            // MATERIALITY SVG DRAWING
+            const paths = document.querySelectorAll(".messy-path");
+            paths.forEach(p => {
+                const length = p.getTotalLength();
+                p.style.strokeDasharray = length;
+                p.style.strokeDashoffset = length;
+                
+                gsap.to(p, {
+                    strokeDashoffset: 0,
+                    scrollTrigger: {
+                        trigger: "#materiality",
+                        start: "top center",
+                        end: "bottom center",
+                        scrub: 1
+                    }
+                });
+            });
+
+            // FOOTER SLIDE-UP ANIMATION
+            gsap.from("#contact-content", {
+                y: 150,
+                opacity: 0,
+                duration: 1.5,
+                ease: "power3.out",
+                scrollTrigger: {
+                    trigger: "#contact",
+                    start: "top 60%"
+                }
+            });
+            
+            // FOOTER PARALLAX TEXT
+            gsap.to("#footer-bg-text", {
+                y: -100,
+                ease: "none",
+                scrollTrigger: {
+                    trigger: "#contact",
+                    start: "top bottom",
+                    end: "bottom top",
+                    scrub: true
+                }
+            });
+        }
+
+        // --- 6. CANVAS WIND SIMULATION ---
+        const canvas = document.getElementById('wind-canvas');
+        const ctx = canvas.getContext('2d');
+        let width, height, particles = [];
+
+        class Particle {
+            constructor() {
+                this.x = Math.random() * width;
+                this.y = Math.random() * height;
+                this.vx = Math.random() * 0.5 + 0.1;
+                this.size = Math.random() * 1.5;
+            }
+            update() {
+                this.x += this.vx;
+                if(this.x > width) this.x = 0;
+            }
+            draw() {
+                ctx.fillStyle = '#9C4328';
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        function initCanvas() {
+            width = window.innerWidth;
+            height = window.innerHeight;
+            canvas.width = width;
+            canvas.height = height;
+            particles = [];
+            for(let i=0; i<150; i++) particles.push(new Particle());
+        }
+
+        function animateCanvas() {
+            ctx.clearRect(0,0,width,height);
+            particles.forEach(p => { p.update(); p.draw(); });
+            requestAnimationFrame(animateCanvas);
+        }
+
+        window.addEventListener('resize', initCanvas);
+        initCanvas();
+        animateCanvas();
+
+    </script>
+</body>
+</html>
